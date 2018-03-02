@@ -1,0 +1,55 @@
+<ion-header>
+  <ion-navbar class="ion-head">
+    <!-- <button ion-button menuToggle>
+        <ion-icon name="menu"></ion-icon>
+      </button> -->
+    <!-- <ion-title>查询</ion-title> -->
+  </ion-navbar>
+</ion-header>
+
+<ion-content>
+  <ion-list>
+    <ion-item>
+      <ion-label>年份</ion-label>
+      <ion-select [(ngModel)]="query.year">
+        <ion-option value="0">全部</ion-option>
+        <ion-option *ngFor="let year of years" value="{{year}}">{{year}}</ion-option>
+      </ion-select>
+    </ion-item>
+    <ion-item>
+      <ion-label>事件来源</ion-label>
+      <ion-select [(ngModel)]="query.laiyuan">
+          <ion-option value="全部">全部</ion-option>
+        <ion-option *ngFor="let source of sources" value="{{source}}">{{source}}</ion-option>
+      </ion-select>
+    </ion-item>
+    <ion-item>
+      <ion-label>处理进度</ion-label>
+      <ion-select [(ngModel)]="query.jindu">
+        <ion-option value="-1">全部</ion-option>
+        <ion-option value="2">待核实</ion-option>
+        <ion-option value="4">待处理</ion-option>
+        <ion-option value="6">待申请结案</ion-option>
+      </ion-select>
+    </ion-item>
+    <ion-item>
+      <ion-label>事件编号</ion-label>
+      <ion-input type="text" [(ngModel)]="query.id" placeholder="请填写事件编号"></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-label>镇名称</ion-label>
+      <ion-input type="text" [(ngModel)]="query.zhenmc" placeholder="请填写镇名称"></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-label>村名称</ion-label>
+      <ion-input type="text" [(ngModel)]="query.cunmc" placeholder="请填写村名称"></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-label>当事人</ion-label>
+      <ion-input type="text" [(ngModel)]="query.dangshiren" placeholder="请填写当事人"></ion-input>
+    </ion-item>
+    <div padding>
+    <button ion-button block (click)="onquery()">查 询</button>
+    </div>
+  </ion-list>
+</ion-content>

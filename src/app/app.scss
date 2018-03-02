@@ -1,0 +1,80 @@
+// http://ionicframework.com/docs/theming/
+
+
+// App Global Sass
+// --------------------------------------------------
+// Put style rules here that you want to apply globally. These
+// styles are for the entire app and not just one component.
+// Additionally, this file can be also used as an entry point
+// to import other Sass files to be included in the output CSS.
+//
+// Shared Sass variables, which can be used to adjust Ionic's
+// default Sass variables, belong in "theme/variables.scss".
+//
+// To declare rules for a specific mode, create a child rule
+// for the .md, .ios, or .wp mode classes. The mode class is
+// automatically applied to the <body> element in the app.
+
+.log_b{
+    p{
+        color: #888;
+        text-align: center;
+    }
+}
+.alert-wrapper{
+    position: relative;
+}
+
+.login_page {
+    background: url("../assets/imgs/log_back.png");
+    //background-size: cover;
+    background-size: 100%;
+    background-position: bottom;
+    background-repeat: no-repeat;
+
+    .item-block{
+        border: solid 1px #29cccf;
+        border-bottom: solid 1px #29cccf !important;
+        border-top: solid 1px #29cccf !important;
+        margin: 10px 40px;
+        width: auto;
+        
+        .item-inner{
+            border:none;
+        }
+    }
+    .log_btn[padding]{
+        padding: 0px 40px 10px;
+        button{
+            border-radius: 0;
+           /* background-color:#29cccf;*/
+        }        
+    }
+    .log_logo{
+        margin: 40px 0;
+        text-align: center;
+        img{
+            width: 50%;
+        }
+    }
+}
+
+button{
+    border-radius: 0 !important; 
+}
+
+
+ion-navbar.toolbar{
+    min-height: 80px;
+}
+
+.ion-head .toolbar-background{
+    background: url(../assets/imgs/head.png);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: auto 100%;
+}
+.back-button-text{
+    display: none;
+}
+

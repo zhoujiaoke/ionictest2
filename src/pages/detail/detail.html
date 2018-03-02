@@ -1,0 +1,39 @@
+<ion-header>
+    <ion-navbar class="ion-head">
+        <ion-title></ion-title>
+    </ion-navbar>
+</ion-header>
+
+<ion-content>
+    <ion-list>
+        <ion-item>
+            <ion-label>镇村名称</ion-label>
+            <ion-input type="text" [(ngModel)]="item.zcmc" placeholder="镇村名称"></ion-input>
+        </ion-item>
+        <ion-item>
+            <ion-label>地点描述</ion-label>
+            <ion-input type="text" [(ngModel)]="item.didianms" placeholder="地点描述"></ion-input>
+        </ion-item>
+        <ion-item>
+            <ion-label>当事人</ion-label>
+            <ion-input type="text" [(ngModel)]="item.person" placeholder="当事人"></ion-input>
+        </ion-item>
+        <ion-item>
+            <ion-label>占地面积</ion-label>
+            <ion-input type="text" [(ngModel)]="item.zhandimj" placeholder="占地面积"></ion-input>
+        </ion-item>
+        <ion-item>
+            <ion-label>建设面积</ion-label>
+            <ion-input type="text" [(ngModel)]="item.jianzhumj" placeholder="建设面积"></ion-input>
+        </ion-item>
+    </ion-list>
+    <div padding *ngIf="canedit"> 
+        <button ion-button color="primary" block (click)="submit()">提 交</button>
+    </div>
+    <div id="upload-target" class="upload-btn" *ngIf="canedit">
+        <img src="assets/imgs/takephoto.png" (click)="addPhoto()" *ngIf="showpic"/>
+        <!-- <img src="{{uppicurl}}" id="uppic"/> -->
+        <span>{{tip}}</span>
+    </div>
+    <div id='map' style="height:0"></div>
+</ion-content>

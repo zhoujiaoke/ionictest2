@@ -1,0 +1,65 @@
+<ion-header>
+  <ion-navbar class="ion-head">
+    <!-- <button ion-button menuToggle>
+      <ion-icon name="menu"></ion-icon>
+    </button> -->
+    <!-- <ion-title>列表（事件处理向左滑动）</ion-title> -->
+  </ion-navbar>
+</ion-header>
+
+<ion-content>
+  <ion-refresher (ionRefresh)="doRefresh($event)">
+    <ion-refresher-content pullingIcon="arrow-dropdown" pullingText="下拉刷新" refreshingSpinner="circles" refreshingText="刷新..."></ion-refresher-content>
+  </ion-refresher>
+  <ion-list class="list-content">
+    <ion-item-sliding *ngFor="let item of items">
+      <ion-item (click)="gotoDetail(item.id,item.rasternum,item.jingduid)">
+        <h2>
+          <span>{{item.id}}{{item.nianfen}}</span>
+          <span>{{item.laiyuan}}</span>
+        </h2>
+        <p>
+          <span>{{item.address}}</span>
+          <span>{{item.person}}</span>
+          <span *ngIf="item.jingduid=='2'" style="color:#0099FF">{{item.jindu}}</span>
+          <span *ngIf="item.jingduid=='3'" style="color:#660033">{{item.jindu}}</span>
+          <span *ngIf="item.jingduid=='4'" style="color:#FF6633">{{item.jindu}}</span>
+          <span *ngIf="item.jingduid=='5'" style="color:#CC9933">{{item.jindu}}</span>
+          <span *ngIf="item.jingduid=='6'" style="color:#006600">{{item.jindu}}</span>
+          <span *ngIf="item.jingduid=='7'" style="color:#CC0099">{{item.jindu}}</span>
+          <span *ngIf="item.jingduid=='8'" style="color:#FF3399">{{item.jindu}}</span>
+          <span *ngIf="item.jingduid=='9'" style="color:#999999">{{item.jindu}}</span>
+        </p>
+        <!-- <span ion-button clear item-end>
+          <img *ngIf="item.jingduid=='2'" src="assets/imgs/0099ff.png" />
+          <img *ngIf="item.jingduid=='3'" src="assets/imgs/660033.png" />
+          <img *ngIf="item.jingduid=='4'" src="assets/imgs/ff6633.png" />
+          <img *ngIf="item.jingduid=='5'" src="assets/imgs/cc9933.png" />
+          <img *ngIf="item.jingduid=='6'" src="assets/imgs/006600.png" />
+          <img *ngIf="item.jingduid=='7'" src="assets/imgs/cc0099.png" />
+          <img *ngIf="item.jingduid=='8'" src="assets/imgs/ff3399.png" />
+          <img *ngIf="item.jingduid=='9'" src="assets/imgs/999999.png" />
+        </span> -->
+       
+        <ion-icon clear item-end name="pin" color="danger" *ngIf="item.rasternum != '0'" (click)="gotoMap(item.id,$event)"></ion-icon>
+       
+      </ion-item>
+      <!-- <ion-item-options side="right" class="list-event">
+        <ion-row>
+          <ion-col *ngIf="item.rasternum != '0'" (click)="gotoMap(item.id)">
+            <ion-icon name="pin" color="danger" ></ion-icon>
+          </ion-col>
+          <ion-col (click)="gotoDetail(item.id,item.rasternum)"
+          *ngIf="item.jingduid=='2' || item.jingduid=='4' || item.jingduid=='5' || item.jingduid=='6'">
+            <ion-icon color="primary" name="information-circle" ></ion-icon>
+          </ion-col>
+        </ion-row>
+      </ion-item-options> -->
+    </ion-item-sliding>
+  </ion-list>
+
+  <ion-infinite-scroll (ionInfinite)="doInfinite($event)">
+    <ion-infinite-scroll-content loadingSpinner="bubbles" loadingText="加载更多数据...">
+    </ion-infinite-scroll-content>
+  </ion-infinite-scroll>
+</ion-content>

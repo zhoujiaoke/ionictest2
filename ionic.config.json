@@ -1,0 +1,15 @@
+{
+  "name": "test",
+  "app_id": "0679b671",
+  "type": "ionic-angular",
+  "integrations": {
+    "cordova": {}
+  },
+  "proxies": [
+    {
+      "path": "/DataServer.asmx",
+      "proxyUrl": "http://localhost:58233/DataServer.asmx"
+    }
+  ]
+  
+}
