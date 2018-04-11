@@ -9,10 +9,12 @@ import { SplashScreen } from '@ionic-native/splash-screen';
 import { Geolocation } from '@ionic-native/geolocation';
 import { Camera } from '@ionic-native/camera';
 import { FileTransfer } from '@ionic-native/file-transfer';
-
+import { File } from '@ionic-native/file';
 import { StorageService } from '../service/storage.service';
 import { HomeService } from '../service/home.service';
 import { NativeServiceProvider } from '../service/native.service';
+import { AppUpdate } from '@ionic-native/app-update';
+import { IonicImageViewerModule } from 'ionic-img-viewer';
 
 
 @NgModule({
@@ -20,6 +22,7 @@ import { NativeServiceProvider } from '../service/native.service';
     MyApp
   ],
   imports: [
+    IonicImageViewerModule,
     BrowserModule,
     HttpModule,
     IonicModule.forRoot(MyApp)
@@ -34,6 +37,8 @@ import { NativeServiceProvider } from '../service/native.service';
     Geolocation,
     Camera,
     FileTransfer,
+    File,
+    AppUpdate,
     StorageService,
     HomeService,
     NativeServiceProvider,

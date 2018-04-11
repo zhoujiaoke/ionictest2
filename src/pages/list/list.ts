@@ -6,8 +6,6 @@ import { Query } from '../../model/query';
 import { StorageService } from "../../service/storage.service";
 import { HomeService } from "../../service/home.service";
 
-//import { TabsPage } from '../tabs/tabs';
-
 @IonicPage()
 @Component({
   selector: 'page-list',

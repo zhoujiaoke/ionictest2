@@ -27,13 +27,36 @@
             <ion-input type="text" [(ngModel)]="item.jianzhumj" placeholder="建设面积"></ion-input>
         </ion-item>
     </ion-list>
-    <div padding *ngIf="canedit"> 
+
+    <div class="piclist" [class.no-btn]="canedit == false" [class.no-content]="canedit == false && piclist.length == 0">
+        <div id="upload-target" class="upload-btn" *ngIf="canedit" [class.upload-center]="piclist.length == 0">
+            <img src="assets/imgs/takephoto.png" (click)="addPhoto()" *ngIf="showpic" />
+            <!-- <span>{{tip}}</span> -->
+            <!-- <img id="uppic" /> -->
+        </div>
+        <ion-slides slidesPerView="3.5">
+            <ion-slide *ngFor="let item of piclist">
+                <img src="{{item.path}}" (click)="presentPopoverdz($event,item.index)"/>
+            </ion-slide>
+        </ion-slides>
+    </div>
+    <div class="tip">{{tip}}</div>
+    <div padding *ngIf="canedit">
         <button ion-button color="primary" block (click)="submit()">提 交</button>
     </div>
-    <div id="upload-target" class="upload-btn" *ngIf="canedit">
-        <img src="assets/imgs/takephoto.png" (click)="addPhoto()" *ngIf="showpic"/>
-        <!-- <img src="{{uppicurl}}" id="uppic"/> -->
-        <span>{{tip}}</span>
+    <div id="locationmsg">{{locationmsg}}</div>
+   
+    <div class="tuban-contrast" *ngIf="hasTB == 1">
+        <ul>
+            <li>
+                <img src="{{tubanOLD}}" (click)="presentPopover($event,tubanOLD)" /><!-- (click)="presentPopover($event,tubanOLD)" -->
+                <span>变化前</span>
+            </li>
+            <li>
+                <img src="{{tubanNEW}}" (click)="presentPopover($event,tubanNEW)" /><!-- (click)="presentPopover($event,tubanNEW)" -->
+                <span>变化后</span>
+            </li>
+        </ul>
     </div>
     <div id='map' style="height:0"></div>
 </ion-content>

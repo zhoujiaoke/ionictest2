@@ -1,9 +1,9 @@
 import { Component } from '@angular/core';
 import { NavController, NavParams,IonicPage,Events} from 'ionic-angular';
 import { Query} from '../../model/query';
-
 import { StorageService } from "../../service/storage.service";
 import { HomeService } from "../../service/home.service";
+
 @IonicPage()
 @Component({
   selector: 'page-query',
@@ -47,11 +47,9 @@ export class QueryPage {
   }
   
   onquery(){
-    //var b = this.navCtrl.canGoBack();
     this.storageService.write("yhqueryinfo",this.query);
     this.events.publish('onquery');
     this.navCtrl.parent.select(0);
-
   }
  
 }

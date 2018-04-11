@@ -1,18 +1,82 @@
 page-detail{
   .upload-btn{
-    text-align: center;
-    color: #888;
+    position: absolute;
+    left: 0;    
     img{
-      width: 80px;
-      margin: 0 auto 10px;
+      width: 75px;
+      margin: 0 5px;
       display: block;
     }
     img#uppic{
       width: 300px;
       margin-top: 20px;
-    }
+    }    
+  }
+  .upload-center{
+    left: 50%;
+    margin-left: -43px;
+  }
+  .tip{
+    text-align: center;
+    color: #888;
   }
   .success{
     background-color: #32db64;
+  }
+  #locationmsg{
+    text-align: center;
+    margin-bottom: 16px;
+  }
+  .list{
+    margin-bottom: 30px;
+  }
+  .tuban-contrast{
+    font-size: 0;
+    margin-bottom: 10px;
+    ul{
+      padding: 0 10px;
+      display: flex;
+      li{
+        flex: 1;
+        border: solid 1px #ddd;
+        box-sizing: border-box;
+        display: inline-block;
+        text-align: center;
+        span{
+          display: inline-block;
+          padding: 5px 0;
+          font-size: 13px;
+          color: #333;
+          font-weight: bold;
+        }
+        img{
+          width: 100%;
+          box-sizing: border-box;
+          padding: 5px;
+        }
+      }
+      li:first-of-type{
+        border-right: none;
+      }
+    }
+  }
+  .piclist{
+    height: 81px;
+    position: relative;
+    padding-left: 80px;
+    // margin-right: -30px;
+    ion-slides {
+      // margin-left: 80px;
+      img{
+        border: solid 1px #ddd;
+        padding: 5px;
+      }
+    }
+  }
+  .no-btn{
+    padding-left: 0px;
+  }
+  .no-content{
+    height: 0px;
   }
 }

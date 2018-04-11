@@ -1,33 +1,31 @@
-/**
- * Created by yanxiaojun617@163.com on 12-27.
- */
 import { Injectable } from '@angular/core';
 import { ToastController, LoadingController, Platform, Loading, AlertController } from 'ionic-angular';
 import { StatusBar } from '@ionic-native/status-bar';
 import { SplashScreen } from '@ionic-native/splash-screen';
 import { Camera, CameraOptions } from '@ionic-native/camera';
 import { Geolocation } from '@ionic-native/geolocation';
-
-import { FileTransfer, FileUploadOptions, FileTransferObject  } from '@ionic-native/file-transfer';
+import { AppUpdate } from '@ionic-native/app-update';
+import { FileTransfer, FileUploadOptions, FileTransferObject } from '@ionic-native/file-transfer';
 import { Observable } from "rxjs/Observable";
-//declare var LocationPlugin;
-//declare var cordova: any;
+import { File } from '@ionic-native/file';
+import 'blueimp-canvas-to-blob';
+import { AppConfig } from '../app/app.config';
 
 @Injectable()
 export class NativeServiceProvider {
   private loading: Loading;
   private loadingIsOpen: boolean = false;
-  //private interval = 0;
-  //private QUALITY_SIZE = 90;
-  //private IMAGE_SIZE = 1024;
+  private IMAGE_SIZE = 1024;
   constructor(private platform: Platform,
     private toastCtrl: ToastController,
     private alertCtrl: AlertController,
     private statusBar: StatusBar,
-    private splashScreen: SplashScreen,  
+    private splashScreen: SplashScreen,
     private camera: Camera,
     private transfer: FileTransfer,
     private geolocation: Geolocation,
+    private file: File,
+    private appUpdate: AppUpdate,
     private loadingCtrl: LoadingController) {
   }
 
@@ -49,6 +47,65 @@ export class NativeServiceProvider {
     this.splashScreen.hide();
   }
 
+  /**
+   * 获得app版本号,如0.01
+   * @description  对应/config.xml中version的值
+   */
+
+  checkAppUpdate(){
+    const updateUrl = AppConfig.remoteAPIBaseURL + "/apk/update.xml";
+    this.appUpdate.checkAppUpdate(updateUrl);
+  }
+  /**
+   * 检查app是否需要升级
+   */
+  detectionUpgrade(): void {
+    //这里连接后台判断是否需要升级,不需要升级就return
+    this.alertCtrl.create({
+      title: '升级',
+      subTitle: '发现新版本,是否立即升级？',
+      buttons: [{ text: '取消' },
+      {
+        text: '确定',
+        handler: () => {
+          this.downloadApp();
+        }
+      }
+      ]
+    }).present();
+  }
+
+  /**
+   * 下载安装app
+   */
+  downloadApp(): void {
+    if (this.isAndroid()) {
+      let alert = this.alertCtrl.create({
+        title: '下载进度：0%',
+        enableBackdropDismiss: false,
+        buttons: ['后台下载']
+      });
+      alert.present();
+
+      const fileTransfer: FileTransferObject = this.transfer.create();
+      const apk =  this.file.externalRootDirectory + 'YHFWKW.apk'; //apk保存的目录
+      const APK_DOWNLOAD = AppConfig.remoteAPIBaseURL + "/apk/YHFWKW.apk";
+      fileTransfer.download(APK_DOWNLOAD, apk).then(() => {
+        window['install'].install(apk.replace('file://', ''));
+      });
+
+      fileTransfer.onProgress((event: ProgressEvent) => {
+        let num = Math.floor(event.loaded / event.total * 100);
+        if (num === 100) {
+          alert.dismiss();
+        } else {
+          let title = document.getElementsByClassName('alert-title')[0];
+          title && (title.innerHTML = '下载进度：' + num + '%');
+        }
+      });
+    }
+    
+  }
 
   /**
    * 是否真机环境
@@ -78,15 +135,15 @@ export class NativeServiceProvider {
     }).present();
   }
 
- showToast(message: string = '操作完成', duration: number = 2000, position: string = 'middle'): void {
-    
+  showToast(message: string = '操作完成', duration: number = 2000, position: string = 'middle'): void {
+
     this.toastCtrl.create({
       message: message,
       duration: duration,
       position: position,
       showCloseButton: false
     }).present();
-   
+
   };
 
   /**
@@ -119,15 +176,15 @@ export class NativeServiceProvider {
   /**
    * 使用cordova-plugin-camera获取照片
    * targetWidth: this.IMAGE_SIZE,//缩放图像的宽度（像素）
-    targetHeight: this.IMAGE_SIZE,//缩放图像的高度（像素）
-    correctOrientation: true//设置摄像机拍摄的图像是否为正确的方向
+     targetHeight: this.IMAGE_SIZE,//缩放图像的高度（像素）
+     correctOrientation: true,//设置摄像机拍摄的图像是否为正确的方向
      quality: this.QUALITY_SIZE,//图像质量，范围为0 - 100
    * @param options
    */
   getPicture(options: CameraOptions = {}): Observable<string> {
     let ops: CameraOptions = Object.assign({
       sourceType: this.camera.PictureSourceType.CAMERA,//图片来源,CAMERA:拍照,PHOTOLIBRARY:相册
-      destinationType: this.camera.DestinationType.FILE_URI,//默认返回base64字符串,DATA_URL:base64   FILE_URI:图片路径   
+      destinationType: this.camera.DestinationType.FILE_URI,//base64字符串,DATA_URL:base64   FILE_URI:图片路径   NATIVE_URI
       allowEdit: false,//选择图片前是否允许编辑
       encodingType: this.camera.EncodingType.JPEG,
       saveToPhotoAlbum: false//是否保存到相册    
@@ -136,6 +193,11 @@ export class NativeServiceProvider {
       this.camera.getPicture(ops).then((fileUrl: string) => {
         if (ops.destinationType === this.camera.DestinationType.FILE_URI) {
           observer.next(fileUrl);
+        }
+        else if (ops.destinationType === this.camera.DestinationType.NATIVE_URI) {
+          this.file.resolveLocalFilesystemUrl(fileUrl).then((fileEntry)=>{
+            observer.next(fileEntry.toInternalURL());
+          });        
         } else {
           observer.next(null);
         }
@@ -159,15 +221,17 @@ export class NativeServiceProvider {
    */
   getPictureByCamera(options: CameraOptions = {}): Observable<string> {
     let ops: CameraOptions = Object.assign({
+      targetWidth: this.IMAGE_SIZE,//缩放图像的宽度（像素）
+      targetHeight: this.IMAGE_SIZE,//缩放图像的高度（像素）
       sourceType: this.camera.PictureSourceType.CAMERA,
-      destinationType: this.camera.DestinationType.FILE_URI//DATA_URL: 0 base64字符串, FILE_URI: 1图片路径
+      destinationType: this.camera.DestinationType.FILE_URI,
+      saveToPhotoAlbum: true//是否保存到相册    
     }, options);
 
     if (this.isMobile()) {
       return this.getPicture(ops);
     } else {
       return Observable.create(observer => {
-        //observer.next("file:///storage/emulated/0/Android/data/io.ionic.starter/cache/IMG_20170923_083830.jpg?1507518576763");
         observer.next("http://192.168.10.141:8002/test.jpg");
       });
     }
@@ -178,17 +242,23 @@ export class NativeServiceProvider {
    * 通过图库获取照片
    * @param options
    */
-  getPictureByPhotoLibrary(options: CameraOptions = {}): Observable<string> {
+  getPictureByPhotoLibrary(hasTB, options: CameraOptions = {}): Observable<string> {
     let ops: CameraOptions = Object.assign({
       sourceType: this.camera.PictureSourceType.PHOTOLIBRARY,
-      destinationType: this.camera.DestinationType.FILE_URI//DATA_URL: 0 base64字符串, FILE_URI: 1图片路径
+      destinationType: this.camera.DestinationType.FILE_URI
     }, options);
 
+    if (this.isIos() && hasTB == 1) {
+      ops.destinationType = this.camera.DestinationType.NATIVE_URI;
+    }
+    if (hasTB != 1) {
+      ops.targetWidth = this.IMAGE_SIZE;//缩放图像的宽度（像素）
+      ops.targetHeight = this.IMAGE_SIZE;//缩放图像的高度（像素）
+    }
     if (this.isMobile()) {
       return this.getPicture(ops);
     } else {
       return Observable.create(observer => {
-        //observer.next("file:///storage/emulated/0/Android/data/io.ionic.starter/cache/IMG_20170923_083830.jpg?1507518576763");
         var url = "http://192.168.10.141:8002/test.jpg";
         observer.next(url);
       });
@@ -197,21 +267,17 @@ export class NativeServiceProvider {
 
 
   uploadPic(file: string, url: string): Observable<any> {
-    if (this.isMobile()) {
-      //var fileName = file.substring(file.lastIndexOf("\/") + 1, file.lastIndexOf("\?"));
+    if (this.isMobile()) {      
       return Observable.create(observer => {
         let options1: FileUploadOptions = {
           fileKey: 'file',
           fileName: 'img.jpeg',
           headers: {}
         }
-
-
-        const fileTransfer: FileTransferObject  = this.transfer.create();
+        const fileTransfer: FileTransferObject = this.transfer.create();
         fileTransfer.upload(file, url, options1)
           .then((data) => {
             // success
-            //observer.next("success");
             observer.next(data);
             console.log("success");
           }, (err) => {
@@ -227,49 +293,78 @@ export class NativeServiceProvider {
     }
   }
 
-  /**
-   * 获得用户当前坐标
-   */
-  // getUserLocation(): Observable<Position> {
-  //   return Observable.create(observer => {
-  //     if (this.isMobile()) {
-  //       LocationPlugin.getLocation(data => {
-  //         observer.next({ 'lng': data.longitude, 'lat': data.latitude, 'add': data.address, 'satellites': data.satellites, 'speed': data.speed });
-  //       }, msg => {
-  //         this.alert(msg.indexOf('缺少定位权限') == -1 ? ('错误消息：' + msg) : '缺少定位权限，请在手机设置中开启');
-  //         this.warn('getUserLocation:' + msg);
-  //         observer.error(msg);
-  //       }, err => {
-  //         observer.error(err);
-  //       });
-  //     } else {
-  //       console.log('非手机环境,即测试环境返回固定坐标');
-  //       observer.next({ 'lng': 120.350912, 'lat': 30.1, 'add': '浙江嘉兴南湖区', 'satellites': 3, 'speed': 9.9 });
-  //     }
-  //   });
-  // }
-
   getLocation(): Observable<any> {
-    
+
     if (this.isMobile()) {
-      return Observable.create(observer=>{
-        this.geolocation.getCurrentPosition().then(location=>{
+      return Observable.create(observer => {
+        this.geolocation.getCurrentPosition({ enableHighAccuracy: true, timeout: 8000 }).then(location => {
           observer.next(location.coords);
         });
       })
-    }else{
-      return Observable.create(observer=>{
-        // if (navigator.geolocation)
-        // {
-        //   navigator.geolocation.getCurrentPosition((position)=>{
-        //     observer.next(position.coords);
-        //   });
-        // }
-        // else{
-          console.log('非手机环境,即测试环境返回固定坐标');
-          observer.next({'longitude':120.094,'latitude':30.436,'accuracy':10});
-        // } 
+    } else {
+      return Observable.create(observer => {       
+        console.log('非手机环境,即测试环境返回固定坐标');
+        observer.next({ 'longitude': 120.094, 'latitude': 30.436, 'accuracy': 10 });     
       });
     }
-  }    
+  }
+
+  //压缩图片并返回图片地址
+  compressPic(fileUrl): Observable<string> {
+
+    return Observable.create(observer => {
+
+      var maxWidth = this.IMAGE_SIZE;
+      var maxHeight = this.IMAGE_SIZE;
+      var file = this.file;
+
+      var img = document.createElement("img");
+
+      img.onload = function () {
+
+        // 图片原始尺寸
+        var originWidth = img.width;
+        var originHeight = img.height;      
+
+        // 目标尺寸
+        var targetWidth = originWidth, targetHeight = originHeight;
+        // 图片尺寸超过400x400的限制
+        if (originWidth > maxWidth || originHeight > maxHeight) {
+          if (originWidth / originHeight > maxWidth / maxHeight) {
+            // 更宽，按照宽度限定尺寸
+            targetWidth = maxWidth;
+            targetHeight = Math.round(maxWidth * (originHeight / originWidth));
+          } else {
+            targetHeight = maxHeight;
+            targetWidth = Math.round(maxHeight * (originWidth / originHeight));
+          }
+        }
+        // 缩放图片需要的canvas
+        var canvas = document.createElement('canvas');
+        var context = canvas.getContext('2d');
+
+        // canvas对图片进行缩放
+        canvas.width = targetWidth;
+        canvas.height = targetHeight;
+        // 清除画布
+        context.clearRect(0, 0, targetWidth, targetHeight);
+        // 图片压缩
+        context.drawImage(img, 0, 0, targetWidth, targetHeight);
+
+        // canvas转为blob toBlob有兼容性问题
+        canvas.toBlob((blob) => {
+
+          file.createFile(file.dataDirectory, 'yhfwkw.jpg', true).then((fileEntry) => {                     
+            file.writeExistingFile(file.dataDirectory, 'yhfwkw.jpg', blob).then(()=>{
+              observer.next(fileEntry.toInternalURL());
+            });
+          });
+
+        },
+        'image/jpeg');
+      }
+      img.src = fileUrl;
+      });
+  }
+
 }                                                                                                                                               

@@ -2,8 +2,6 @@ import { Component, ViewChild } from '@angular/core';
 import { Nav, Platform, AlertController } from 'ionic-angular';
 import { StatusBar } from '@ionic-native/status-bar';
 import { SplashScreen } from '@ionic-native/splash-screen';
-//import { TabsPage } from '../pages/tabs/tabs';
-
 
 @Component({
   templateUrl: 'app.html'
@@ -46,13 +44,10 @@ export class MyApp {
       //阻止默认的行为
       //e.preventDefault();
 
-      //alert("in");
-      if (!this.nav.canGoBack()) {
-        //alert("检测到在根视图点击了返回按钮");
+      if (!this.nav.canGoBack()) {      
         this.showConfirm();
       }
-      else {
-        //alert("检测到在子路径中点击了返回按钮。");
+      else {        
         this.nav.pop();
       }
 
@@ -60,8 +55,7 @@ export class MyApp {
     });
   }
 
-  showConfirm() {
-    //alert("inshowConfirm");
+  showConfirm() {   
     let confirm = this.alertCtrl.create({
       title: '提示?',
       message: '确定要退出应用吗?',

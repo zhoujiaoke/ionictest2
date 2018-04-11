@@ -1,31 +1,14 @@
-<!-- <ion-header>
-  <ion-navbar>  	
-   <ion-title>登录</ion-title>
-  </ion-navbar>
-</ion-header> -->
-
 <ion-content class="login_page">
   <div class="log_logo"><img src="assets/imgs/log_logo.png"/></div>
-  <!-- <h1 class="log_title">防违控违信息采集平台</h1> -->
   <ion-list class="log_list">
     <ion-item>
-      <!-- <ion-label fixed>用户名</ion-label> -->
       <ion-input required type="text" [(ngModel)]="user.username" placeholder='用户名'></ion-input>
     </ion-item>
-
     <ion-item>
-      <!-- <ion-label fixed>密码</ion-label> -->
       <ion-input required type="password" [(ngModel)]="user.password" placeholder='密码'></ion-input>
     </ion-item>
-
   </ion-list>
-
   <div padding class="log_btn">
     <button ion-button  block (click)="login()">登 录</button>
   </div>
-
-  <!-- <div class="log_b">
-    <p>技术支持：浙江省测绘大队</p>
-    <p><a (click)="testlocate()">定位测试</a></p>
-  </div> -->
 </ion-content>

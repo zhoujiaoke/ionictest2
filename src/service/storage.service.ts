@@ -18,7 +18,6 @@ export class StorageService {
         if (value && value != "undefined" && value != "null") {
             return <T>JSON.parse(value);
         }
-
         return null;
     }
 

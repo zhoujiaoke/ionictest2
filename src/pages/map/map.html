@@ -1,8 +1,9 @@
 <ion-header>
     <ion-navbar class="ion-head">
-      <!-- <ion-title>地图</ion-title> -->
     </ion-navbar>
   </ion-header>
 <ion-content>
-<div id="map"></div>
+<div id="map">
+</div>
+<ion-icon name="locate" [(class)] ='locateclass' (click)="locate();" *ngIf="tbload"></ion-icon>
 </ion-content>

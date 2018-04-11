@@ -1,15 +1,16 @@
 import { Component } from '@angular/core';
-import { NavController, NavParams, IonicPage, ToastController, ActionSheetController, Events, LoadingController } from 'ionic-angular';
+import { PopoverController, NavController, NavParams, IonicPage, ToastController, ActionSheetController, Events, LoadingController } from 'ionic-angular';
 import { Item } from '../../model/item';
 import { Query } from '../../model/query';
 import { HomeService } from "../../service/home.service";
 import { NativeServiceProvider } from "../../service/native.service";
-//import { query } from '@angular/core/src/animation/dsl';
 import { AppConfig } from '../../app/app.config';
-//import { Observable } from "rxjs/Observable";
 import * as L from 'leaflet';
 import * as esri from 'esri-leaflet';
 import * as EXIF from 'exif-js';
+import { Geolocation } from '@ionic-native/geolocation';
+import { IfObservable } from 'rxjs/observable/IfObservable';
+import { ImageViewerController } from 'ionic-img-viewer';
 @IonicPage()
 @Component({
   selector: 'page-detail',
@@ -20,20 +21,28 @@ export class DetailPage {
   itemid: string;
   hasTB: Number;
   query: Query;
-  interval: any;
+  //interval: any;
   tubanurl: string;
   point: L.latLng = null;
   canpic: boolean = false;
   showpic: boolean = false;
   location: string;
+  piclocation: string;
   hasquerytb = false;
   uppicurl: string = "";
   tip: string = "";
   canedit: boolean = false;
   loading;
   loadingIsOpen;
+  locationmsg: string = "";
+  watch;
+  subscription;
+  tubanOLD = "";
+  tubanNEW = "";
+  piclist = [];
   constructor(public navCtrl: NavController, public navParams: NavParams, private homeService: HomeService, public toastCtrl: ToastController,
-    public actionSheetCtrl: ActionSheetController, public nativeService: NativeServiceProvider, public events: Events, private loadingCtrl: LoadingController) {
+    public actionSheetCtrl: ActionSheetController, public nativeService: NativeServiceProvider, public events: Events,
+    private loadingCtrl: LoadingController, private geolocation: Geolocation, public popoverCtrl: PopoverController, public imageViewerCtrl: ImageViewerController) {
     L.esri = esri;
     this.item = new Item();
     this.itemid = this.navParams.get("itemid");
@@ -44,30 +53,90 @@ export class DetailPage {
     }
     if (this.itemid == "D53494")
       this.hasTB = 1;//模拟数据
+
+    this.watch = this.geolocation.watchPosition({ enableHighAccuracy: true, timeout: 8000 });
   }
+
   ngOnInit() {
     this.tubanurl = AppConfig.tubanurl;
-
     this.queryItem();
+
+    this.getXCZP();
+    if (this.hasTB == 1) {
+      this.getBDZP();
+      // this.tubanOLD = AppConfig.remoteAPIBaseURL + "/Tuban_Images/20181/" + this.itemid + "OLD.jpg";
+      // this.tubanNEW = AppConfig.remoteAPIBaseURL + "/Tuban_Images/20181/" + this.itemid + "NEW.jpg";
+    }
+
     if (this.canedit) {
       if (this.hasTB == 1) {
-        //获取图斑，定位并计算距离差
+        this.locationmsg = "图斑查找中...";
+        document.getElementById("locationmsg").style.color = "#333";
         this.getTB();
-
-        this.interval = setInterval(() => {
-          this.getLocation();
-        }, 10000);
-
       } else {
         this.showpic = true;
         this.nativeService.showToast("可以拍照");
       }
     }
-    //var b = this.navCtrl.canGoBack();
   }
 
   ngOnDestroy() {
-    clearInterval(this.interval);
+    if (this.subscription)
+      this.subscription.unsubscribe();
+  }
+
+  getBDZP() {
+    this.homeService.GetBDZP_Base64(this.itemid).then(
+      response => {//返回值多出 {"d":null}
+        var json = JSON.parse(response._body.replace('{"d":null}', ""));
+        if (json && json.length) {
+          this.tubanOLD = "data:image/jpg;base64," + json[0];
+          this.tubanNEW = "data:image/jpg;base64," + json[1];
+        }
+      }
+    )
+  }
+  getXCZP() {
+    this.piclist = [];
+    this.homeService.GetXCZP_Base64(this.itemid).then(
+      response => {//返回值多出 {"d":null}
+        var json = JSON.parse(response._body.replace('{"d":null}', ""));
+        for (var i = 0; i < json.length; i++) {
+          var item = { path: "data:image/jpg;base64," + json[i], index: i };
+          this.piclist.push(item);
+        }
+      }
+    )
+  }
+  presentPopover(myEvent, src) {
+    // let popover = this.popoverCtrl.create("PicPage", { src: src }, { cssClass: "pop" });
+    // popover.present();//{ev: myEvent}
+    let img = document.createElement("img");
+    img.onload = () => {
+      const imageViewer = this.imageViewerCtrl.create(img);
+      imageViewer.present();            
+    };
+    img.src = src;
+  }
+
+  presentPopoverdz(myEvent, index) {
+    this.homeService.GetDZXCZP_Base64(this.itemid, index).then(
+      response => {//返回值多出 {"d":null}
+        var json = JSON.parse(response._body.replace('{"d":null}', ""));
+        if (json != "") {
+          let src = "data:image/jpg;base64," + json;
+          // let popover = this.popoverCtrl.create("PicPage", { src: src }, { cssClass: "pop" });
+          // popover.present();//{ev}
+          let img = document.createElement("img");
+          img.onload = () => {
+            const imageViewer = this.imageViewerCtrl.create(img);
+            imageViewer.present();            
+          };
+          img.src = src;
+        }
+      }
+    )
+
   }
 
   getTB() {
@@ -77,6 +146,12 @@ export class DetailPage {
     query.where("ID='" + this.itemid + "'");
 
     query.run((error, featureCollection, response) => {
+
+      if (error) {
+        this.nativeService.showToast("未找到图斑。");
+        this.locationmsg = "未找到图斑.";
+        document.getElementById("locationmsg").style.color = "#333";
+      }
       this.hasquerytb = true;
 
       if (featureCollection.features.length != 0) {
@@ -110,22 +185,22 @@ export class DetailPage {
 
       } else {
         this.nativeService.showToast("未找到图斑。");
+        this.locationmsg = "未找到图斑.";
+        document.getElementById("locationmsg").style.color = "#333";
       }
     });
 
   }
 
   getLocation() {
-    if (this.hasquerytb && this.point == null) {
-      clearInterval(this.interval);
-      return;
-    }
     if (this.point != null) {
-      this.nativeService.getLocation().subscribe((resp) => {
-        if (resp) {
-          //position.coords.longitude
-          this.locateSuccess(resp);
-        }
+
+      this.locationmsg = "获取定位中...";
+      document.getElementById("locationmsg").style.color = "#333";
+
+      this.subscription = this.watch.subscribe(position => {
+        if (position.coords !== undefined)
+          this.locateSuccess(position.coords);
       });
     }
   }
@@ -137,14 +212,15 @@ export class DetailPage {
     if (distance <= AppConfig.distance) {
       if (!this.canpic) {
         this.canpic = true;
-        this.nativeService.showToast("精度: " + Math.floor(accuracy) + ", 可以拍照");
       }
+      this.locationmsg = " 精度: " + Math.floor(accuracy) + ", 距离图斑小于30米, 可以拍照.";
+      document.getElementById("locationmsg").style.color = "#333";
     } else {
       this.canpic = false;
-      this.nativeService.showToast(" 精度: " + Math.floor(accuracy) + ", 距离图斑 " + Math.floor(distance) + " 米, 未满足拍照要求.", 2000, 'bottom');//"当前位置：" + this.location  + 
+      this.locationmsg = " 精度: " + Math.floor(accuracy) + ", 距离图斑 " + Math.floor(distance) + " 米, 未满足拍照要求.";
+      document.getElementById("locationmsg").style.color = "#F53D3D";
     }
   }
-
 
   queryItem() {
     this.query = new Query();
@@ -173,10 +249,6 @@ export class DetailPage {
   }
 
   addPhoto() {
-    // let options = {
-    //   targetWidth: 400,
-    //   targetHeight: 400
-    // };
     let actionSheet = this.actionSheetCtrl.create({
       buttons: [
         {
@@ -189,24 +261,21 @@ export class DetailPage {
             }
             this.nativeService.getPictureByCamera().subscribe(fileUrl => {
               this.uppicurl = fileUrl;
-              this.uploadpic(fileUrl);
+              this.uploadpic(fileUrl, this.location);
             });
           }
         },
         {
           text: '从手机相册选择',
           handler: () => {
-            this.nativeService.getPictureByPhotoLibrary().subscribe(fileUrl => {
+            this.nativeService.getPictureByPhotoLibrary(this.hasTB).subscribe(fileUrl => {
               this.uppicurl = fileUrl;
               //判断照片是否满足要求
               if (this.hasTB == 1) {
                 this.picFillBill();
-                this.events.subscribe('picfill', () => {
-                  this.uploadpic(fileUrl);
-                });
               }
               else {
-                this.uploadpic(fileUrl);
+                this.uploadpic(fileUrl, this.location);
               }
             });
             console.log('Archive clicked');
@@ -225,18 +294,22 @@ export class DetailPage {
     actionSheet.present();
   }
 
-  uploadpic(fileUrl) {
-    let upurl = AppConfig.getAPIBaseURL() + "/DataServer.asmx/UploadPhoto?id=" + this.item.id + "&location=" + this.location + "&user=";
+  uploadpic(fileUrl, location) {
+    let upurl = AppConfig.getAPIBaseURL() + "/DataServer.asmx/UploadPhoto?id=" + this.item.id + "&location=" + location + "&user=";
     this.tip = "照片上传中...";
     this.loading = this.loadingCtrl.create({
       content: "照片上传中"
     });
     this.loading.present();
     this.loadingIsOpen = true;
-    setTimeout(() => {//最长显示2分钟
+    setTimeout(() => {//最长显示1分钟
       this.loadingIsOpen && this.loading.dismiss();
       this.loadingIsOpen = false;
-    }, 120000);
+    }, 60000);
+
+    // var showimg = document.getElementById("uppic") as HTMLImageElement;
+    // showimg.src = fileUrl;
+
     this.nativeService.uploadPic(fileUrl, upurl).subscribe(data => {
       this.loadingIsOpen = false;
       this.loading.dismiss();
@@ -244,6 +317,7 @@ export class DetailPage {
       if (json && json.success) {
         this.nativeService.showToast("上传照片成功.", 5000);
         this.tip = "上传照片成功.";
+        this.getXCZP();
       } else {
         this.nativeService.showToast("上传照片失败.", 5000);
         this.tip = "上传照片失败.";
@@ -252,8 +326,6 @@ export class DetailPage {
   }
 
   picFillBill() {
-
-    //var uppic = document.getElementById("uppic");
     var uppic = document.createElement("img");
     uppic.onload = () => {
       this.exif(uppic);
@@ -264,32 +336,32 @@ export class DetailPage {
   exif(uppic) {
     var point = this.point;
     var _toast = (msg) => { this.nativeService.showToast(msg, 5000) };
-    var _publish = () => { this.events.publish('picfill'); }
-    //var data;
-    EXIF.getData(uppic, function () {
+    var _setLocation = (location) => { this.piclocation = location };
+    var that = this;
 
+    EXIF.getData(uppic, function () {
       function _GPS2Decimal(numberArray) {
         return numberArray[0].numerator + numberArray[1].numerator /
           (60 * numberArray[1].denominator) + numberArray[2].numerator / (3600 * numberArray[2].denominator)
       }
-
       var data = EXIF.getAllTags(this);
       if (!data) return false;
-      //alert(JSON.stringify(data));
+
       if (data.GPSLongitude && data.GPSLatitude) {
         var lat = data.GPSLatitude;
         var lon = data.GPSLongitude;
-        //Convert coordinates to WGS84 decimal
         var latRef = data.GPSLatitudeRef || "N";
         var lonRef = data.GPSLongitudeRef || "W";
         lat = _GPS2Decimal(lat) * (latRef == "N" ? 1 : -1);
         lon = _GPS2Decimal(lon) * (lonRef == "W" ? -1 : 1);
-
+        _setLocation(lon + "_" + lat);
         if (point) {
           let distance = point.distanceTo(L.latLng([lat, lon]));
           if (distance <= AppConfig.distance) {
-            _toast("距离图斑:" + Math.floor(distance) + "米，照片满足要求.");
-            _publish();
+            //_toast("距离图斑:" + Math.floor(distance) + "米，照片满足要求.");           
+            that.nativeService.compressPic(that.uppicurl).subscribe((fileUrl) => {
+              that.uploadpic(fileUrl, that.piclocation);
+            });
           }
           else {
             _toast("距离图斑:" + Math.floor(distance) + "米，照片未满足要求，上传图片失败");
@@ -301,5 +373,6 @@ export class DetailPage {
       }
     });
   }
+
 
 }

@@ -30,23 +30,7 @@
     },
     Subdomains: ['0', '1', '2', '3', '4', '5', '6', '7']
   };
-  public static wmts1: any = {
-    yuhang: {//18-20
-      maxZoom: 20, minZoom: 18,
-      img: "http://dt.yuhang.gov.cn/geocloud/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=yhimgmap&STYLE=default&TILEMATRIXSET=TileMatrixSet0&FORMAT=image/png&TILEMATRIX={z}&TILECOL={x}&TILEROW={y}",
-      cia: "http://dt.yuhang.gov.cn/geocloud/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=yhemapanno&STYLE=default&TILEMATRIXSET=TileMatrixSet0&FORMAT=image/png&TILEMATRIX={z}&TILECOL={x}&TILEROW={y}",
-    },
-    zhejiang: {//15-17
-      maxZoom: 17, minZoom: 15,
-      img: "http://srv{s}.zjditu.cn/ZJDOM_2D/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=ZJDOM2W1&STYLE=default&TILEMATRIXSET=c&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&FORMAT=image/tile",
-      cia: "http://srv{s}.zjditu.cn/ZJDOMANNO_2D/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=ZJIMGANNO&STYLE=default&TILEMATRIXSET=c&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&FORMAT=image/tile"
-    },
-    all: {
-      maxZoom: 14,
-      img: "http://t{s}.tianditu.cn/DataServer?T=img_w&X={x}&Y={y}&L={z}",
-      cia: "http://t{s}.tianditu.cn/DataServer?T=cia_w&X={x}&Y={y}&L={z}"
-    }
-  };
+  
   public static wmts: any = [
     {//18-20
       maxZoom: 20, minZoom: 18,

@@ -1,8 +1,28 @@
-// @import "../../node_modules/leaflet/dist/leaflet.css";
-
 #map {
   height: 100%;
   width: 100vw;
   margin: 0;
   padding: 0;
+}
+.map-locate{
+  font-size: 22px;
+  width: 30px;
+  height: 30px;
+  line-height: 30px;
+  text-align: center;
+  position: absolute;
+  top: 90px;
+  left: 12px;
+  z-index: 500;
+  background: #fff;
+  border-radius: 2px;
+}
+.map-locate.selected{
+  background: rgba(0,0,0,.5);
+}
+.map-locate:before{
+  content: "\f31c";
+}
+.map-locate.selected:before{
+  color: white;
 }

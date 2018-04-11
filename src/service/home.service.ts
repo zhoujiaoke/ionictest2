@@ -39,6 +39,33 @@ export class HomeService {
 			.catch(this.handleError);
 	}
 
+	//现场照片
+	GetXCZP_Base64(id) {
+		let url = `${this.serviceUrl}/DataServer.asmx/GetXCZP_Base64?sId=${id}`;
+		return this.http.get(url)
+			.toPromise()
+			.then(response => response)
+			.catch(this.handleError);
+	}
+
+	//现场照片
+	GetDZXCZP_Base64(id,index) {
+		let url = `${this.serviceUrl}/DataServer.asmx/GetDZXCZP_Base64?sId=${id}&&index=${index}`;
+		return this.http.get(url)
+			.toPromise()
+			.then(response => response)
+			.catch(this.handleError);
+	}
+
+	//比对照片
+	GetBDZP_Base64(id) {
+		let url = `${this.serviceUrl}/DataServer.asmx/GetBDZP_Base64?sId=${id}`;
+		return this.http.get(url)
+			.toPromise()
+			.then(response => response)
+			.catch(this.handleError);
+	}
+
 	///// 更新图斑信息，包括当事人，地点描述，占地面积
 	UpdateTBInfo(item){
 		let url = `${this.serviceUrl}/DataServer.asmx/SubmitPhoto`;
